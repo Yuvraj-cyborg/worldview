@@ -146,7 +146,7 @@ export function NewsPanel() {
   const { data, isLoading } = useSWR<NewsData>(
     "/api/news/feeds",
     fetcher,
-    { refreshInterval: 300_000 }
+    { refreshInterval: 60_000 }
   );
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCount, setShowCount] = useState(15);

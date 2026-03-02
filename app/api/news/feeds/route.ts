@@ -13,8 +13,8 @@ const parser = new XMLParser({
 });
 
 const FEED_TIMEOUT_MS = 8000;
-const CACHE_KEY = "wv:news:feeds";
-const CACHE_TTL = 600; // 10 minutes
+const CACHE_KEY = "gt:news:feeds";
+const CACHE_TTL = 120; // 2 minutes — fast refresh for live feed
 
 interface RSSItem {
   title?: string | Record<string, unknown>;
@@ -42,8 +42,8 @@ async function fetchSingleFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> 
   try {
     const resp = await fetch(feed.url, {
       signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
-      headers: { "User-Agent": "WorldView/1.0" },
-      next: { revalidate: 300 },
+      headers: { "User-Agent": "GeoTrack/1.0" },
+      next: { revalidate: 60 },
     });
 
     if (!resp.ok) return [];
