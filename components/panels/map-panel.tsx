@@ -16,7 +16,11 @@ const WorldMap = dynamic(
   }
 );
 
-export function MapPanel() {
+interface MapPanelProps {
+  onCountryClick?: (name: string) => void;
+}
+
+export function MapPanel({ onCountryClick }: MapPanelProps) {
   return (
     <Panel
       title="Global Situation Map"
@@ -24,7 +28,7 @@ export function MapPanel() {
       noPadding
     >
       <div className="h-[55vh] min-h-[400px]">
-        <WorldMap />
+        <WorldMap onCountryClick={onCountryClick} />
       </div>
     </Panel>
   );
