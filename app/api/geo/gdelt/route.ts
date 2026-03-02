@@ -83,7 +83,7 @@ async function fetchGoogleNewsFallback(query: string): Promise<{ articles: Artic
       `https://news.google.com/rss/search?q=${query}+when:1d&hl=en-US&gl=US&ceid=US:en`,
       {
         signal: AbortSignal.timeout(10000),
-        headers: { "User-Agent": "WorldView/1.0" },
+        headers: { "User-Agent": "GeoTrack/1.0" },
         next: { revalidate: 300 },
       }
     );

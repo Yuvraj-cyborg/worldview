@@ -27,7 +27,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const name = COUNTRY_NAMES[code.toUpperCase()];
-  return { title: name ? `${name} — WorldView` : "Country Brief — WorldView" };
+  return { title: name ? `${name} — GeoTrack` : "Country Brief — GeoTrack" };
 }
 
 export default async function CountryPage({ params }: { params: Promise<{ code: string }> }) {

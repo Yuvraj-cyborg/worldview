@@ -240,7 +240,7 @@ export async function queryWithContext(
     ? `\n\nRecent headlines:\n${newsHeadlines.slice(0, 10).map((h) => `- ${h}`).join("\n")}`
     : "";
 
-  const prompt = `You are WorldView, an intelligence analysis assistant. Answer the user's question using the provided context. Cite sources by number [1], [2], etc. Be concise and analytical.
+  const prompt = `You are GeoTrack, an intelligence analysis assistant. Answer the user's question using the provided context. Cite sources by number [1], [2], etc. Be concise and analytical.
 
 Context from knowledge base:
 ${contextLines.join("\n")}

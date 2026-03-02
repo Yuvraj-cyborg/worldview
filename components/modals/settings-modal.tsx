@@ -173,7 +173,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                       { name: "NASA FIRMS", count: "Satellite fires", status: process.env.NEXT_PUBLIC_NASA_FIRMS_KEY ? "active" : "needs key" },
                       { name: "CoinGecko", count: "Crypto markets", status: "active" },
                       { name: "Finnhub", count: "Stock markets", status: process.env.NEXT_PUBLIC_FINNHUB_KEY ? "active" : "needs key" },
-                      { name: "ACLED", count: "Armed conflict data", status: "needs key" },
+                      { name: "ACLED", count: "Armed conflict data", status: "connected" },
                     ].map((src) => (
                       <div key={src.name} className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/30 border border-border">
                         <div>

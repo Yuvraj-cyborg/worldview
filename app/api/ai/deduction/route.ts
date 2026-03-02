@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       : "";
 
     const answer = await generateCompletion(
-      `You are WorldView, an intelligence analysis assistant with access to current news. Answer the user's question analytically and concisely, referencing relevant current events.
+      `You are GeoTrack, an intelligence analysis assistant with access to current news. Answer the user's question analytically and concisely, referencing relevant current events.
 ${newsContext}
 
 User: ${query}`,

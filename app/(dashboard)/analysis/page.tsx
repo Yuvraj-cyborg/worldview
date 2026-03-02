@@ -1,7 +1,7 @@
 import { ChatInterface } from "@/components/ai/chat-interface";
 
 export const metadata = {
-  title: "Analysis — WorldView",
+  title: "Analysis — GeoTrack",
 };
 
 export default function AnalysisPage() {
