@@ -17,6 +17,7 @@
     "@types/topojson-client": "^3.1.5",
     "@upstash/redis": "^1.36.3",
     "@upstash/vector": "^1.2.2",
+    "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
