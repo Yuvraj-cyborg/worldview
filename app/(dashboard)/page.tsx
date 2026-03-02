@@ -40,7 +40,7 @@ export default function DashboardPage() {
       </div>
 
       <DashboardGrid>
-        {/* ── Row 1: News Feed (left) + Live Cams (right) ─── */}
+        {/* ── Top: News Feed + Live Cams ──────────────────── */}
         <PanelSlot>
           <div id="news" className="scroll-mt-16"><NewsPanel /></div>
         </PanelSlot>
@@ -51,7 +51,7 @@ export default function DashboardPage() {
           <div id="signals" className="scroll-mt-16"><SignalsPanel /></div>
         </PanelSlot>
 
-        {/* ── Row 2: Intel & Context ──────────────────────── */}
+        {/* ── Row 2: Intel Feeds ──────────────────────────── */}
         <PanelSlot>
           <div id="focal" className="scroll-mt-16"><FocalPointsPanel /></div>
         </PanelSlot>
@@ -59,20 +59,17 @@ export default function DashboardPage() {
           <div id="gdelt" className="scroll-mt-16"><GdeltPanel /></div>
         </PanelSlot>
 
-        {/* ── Row 3: Data Panels (working) ────────────────── */}
-        <PanelSlot span="2">
-          <div id="ucdp" className="scroll-mt-16"><UcdpEventsPanel /></div>
-        </PanelSlot>
+        {/* ── Row 3: Active Data ──────────────────────────── */}
         <PanelSlot>
           <div id="cii" className="scroll-mt-16"><CIIPanel /></div>
         </PanelSlot>
-
         <PanelSlot>
           <div id="quakes" className="scroll-mt-16"><EarthquakesPanel /></div>
         </PanelSlot>
         <PanelSlot>
           <div id="markets" className="scroll-mt-16"><MarketsPanel /></div>
         </PanelSlot>
+
         <PanelSlot>
           <div id="clock" className="scroll-mt-16"><WorldClockPanel /></div>
         </PanelSlot>
@@ -80,6 +77,9 @@ export default function DashboardPage() {
         {/* ── Bottom: Inactive / No-Data Panels ───────────── */}
         <PanelSlot>
           <div id="conflicts" className="scroll-mt-16"><ConflictsPanel /></div>
+        </PanelSlot>
+        <PanelSlot>
+          <div id="ucdp" className="scroll-mt-16"><UcdpEventsPanel /></div>
         </PanelSlot>
         <PanelSlot>
           <div id="fires" className="scroll-mt-16"><FiresPanel /></div>
@@ -91,4 +91,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
 
