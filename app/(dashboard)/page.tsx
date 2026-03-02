@@ -40,27 +40,26 @@ export default function DashboardPage() {
       </div>
 
       <DashboardGrid>
-        <PanelSlot span="2">
-          <div id="livecams" className="scroll-mt-16"><LiveCamsPanel /></div>
+        {/* ── Row 1: News Feed (left) + Live Cams (right) ─── */}
+        <PanelSlot>
+          <div id="news" className="scroll-mt-16"><NewsPanel /></div>
         </PanelSlot>
         <PanelSlot>
-          <div id="focal" className="scroll-mt-16"><FocalPointsPanel /></div>
-        </PanelSlot>
-
-        <PanelSlot span="2">
-          <div id="news" className="scroll-mt-16"><NewsPanel /></div>
+          <div id="livecams" className="scroll-mt-16"><LiveCamsPanel /></div>
         </PanelSlot>
         <PanelSlot>
           <div id="signals" className="scroll-mt-16"><SignalsPanel /></div>
         </PanelSlot>
 
+        {/* ── Row 2: Intel & Context ──────────────────────── */}
+        <PanelSlot>
+          <div id="focal" className="scroll-mt-16"><FocalPointsPanel /></div>
+        </PanelSlot>
         <PanelSlot span="2">
           <div id="gdelt" className="scroll-mt-16"><GdeltPanel /></div>
         </PanelSlot>
-        <PanelSlot>
-          <div id="conflicts" className="scroll-mt-16"><ConflictsPanel /></div>
-        </PanelSlot>
 
+        {/* ── Row 3: Data Panels (working) ────────────────── */}
         <PanelSlot span="2">
           <div id="ucdp" className="scroll-mt-16"><UcdpEventsPanel /></div>
         </PanelSlot>
@@ -75,16 +74,21 @@ export default function DashboardPage() {
           <div id="markets" className="scroll-mt-16"><MarketsPanel /></div>
         </PanelSlot>
         <PanelSlot>
-          <div id="fires" className="scroll-mt-16"><FiresPanel /></div>
+          <div id="clock" className="scroll-mt-16"><WorldClockPanel /></div>
         </PanelSlot>
 
+        {/* ── Bottom: Inactive / No-Data Panels ───────────── */}
         <PanelSlot>
-          <div id="nuclear" className="scroll-mt-16"><NuclearPanel /></div>
+          <div id="conflicts" className="scroll-mt-16"><ConflictsPanel /></div>
         </PanelSlot>
         <PanelSlot>
-          <div id="clock" className="scroll-mt-16"><WorldClockPanel /></div>
+          <div id="fires" className="scroll-mt-16"><FiresPanel /></div>
+        </PanelSlot>
+        <PanelSlot>
+          <div id="nuclear" className="scroll-mt-16"><NuclearPanel /></div>
         </PanelSlot>
       </DashboardGrid>
     </>
   );
 }
+
