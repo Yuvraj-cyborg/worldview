@@ -149,7 +149,7 @@ export function NewsPanel() {
     { refreshInterval: 60_000 }
   );
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showCount, setShowCount] = useState(15);
+  const [showCount, setShowCount] = useState(4);
   const [activeTab, setActiveTab] = useState("all");
 
   const clusters = data?.clusters ?? [];
@@ -181,7 +181,7 @@ export function NewsPanel() {
               return (
                 <button
                   key={t.id}
-                  onClick={() => { setActiveTab(t.id); setShowCount(15); }}
+                  onClick={() => { setActiveTab(t.id); setShowCount(4); }}
                   className={cn(
                     "px-2 py-1 text-[11px] font-medium rounded-md whitespace-nowrap transition-colors",
                     activeTab === t.id
