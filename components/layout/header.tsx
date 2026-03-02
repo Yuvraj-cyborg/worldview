@@ -1,8 +1,9 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Search, Bell, Sun, Moon, Globe, Settings } from "lucide-react";
+import { Search, Bell, Sun, Moon, Globe, Settings, Github, } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface HeaderProps {
   onOpenSearch?: () => void;
@@ -45,7 +46,7 @@ export function Header({ onOpenSearch, onOpenSettings }: HeaderProps) {
 
         <div className="flex items-center gap-1">
           <button
-            className="relative size-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="relative size-8 cursor-pointer flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label="Alerts"
           >
             <Bell className="size-4" />
@@ -56,15 +57,24 @@ export function Header({ onOpenSearch, onOpenSettings }: HeaderProps) {
 
           <button
             onClick={onOpenSettings}
-            className="size-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="size-8 flex cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label="Settings"
           >
             <Settings className="size-4" />
           </button>
 
+          <Link href={'https://github.com/Yuvraj-cyborg/worldview'} target="_blank" rel="noopener noreferrer">
+            <button
+              className="size-4 flex cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label="GitHub"
+            >
+              <Github />
+            </button>
+          </Link>
+
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="size-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="size-8 flex cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label="Toggle theme"
           >
             <Sun className="size-4 hidden dark:block" />
