@@ -1,3 +1,5 @@
+"use client";
+
 import { DashboardGrid, PanelSlot } from "@/components/layout/dashboard-grid";
 import { NewsPanel } from "@/components/panels/news-panel";
 import { CIIPanel } from "@/components/panels/cii-panel";
@@ -32,58 +34,51 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Map takes full width */}
-      <div className="px-4 md:px-6 pt-4">
+      <div id="map" className="px-4 md:px-6 pt-4 scroll-mt-16">
         <MapPanel />
       </div>
 
       <DashboardGrid>
-        {/* Row 1: News + Focal Points */}
         <PanelSlot span="2">
-          <NewsPanel />
+          <div id="news" className="scroll-mt-16"><NewsPanel /></div>
         </PanelSlot>
         <PanelSlot>
-          <FocalPointsPanel />
+          <div id="focal" className="scroll-mt-16"><FocalPointsPanel /></div>
         </PanelSlot>
 
-        {/* Row 2: GDELT Intel + Signals */}
         <PanelSlot span="2">
-          <GdeltPanel />
+          <div id="gdelt" className="scroll-mt-16"><GdeltPanel /></div>
         </PanelSlot>
         <PanelSlot>
-          <SignalsPanel />
+          <div id="signals" className="scroll-mt-16"><SignalsPanel /></div>
         </PanelSlot>
 
-        {/* Row 3: Conflicts + UCDP Events */}
         <PanelSlot span="2">
-          <ConflictsPanel />
+          <div id="conflicts" className="scroll-mt-16"><ConflictsPanel /></div>
         </PanelSlot>
         <PanelSlot>
-          <UcdpEventsPanel />
+          <div id="ucdp" className="scroll-mt-16"><UcdpEventsPanel /></div>
         </PanelSlot>
 
-        {/* Row 4: CII + Earthquakes + Markets */}
         <PanelSlot span="2">
-          <CIIPanel />
+          <div id="cii" className="scroll-mt-16"><CIIPanel /></div>
         </PanelSlot>
         <PanelSlot>
-          <EarthquakesPanel />
-        </PanelSlot>
-
-        {/* Row 5: Markets + Fires + Nuclear */}
-        <PanelSlot>
-          <MarketsPanel />
-        </PanelSlot>
-        <PanelSlot>
-          <FiresPanel />
-        </PanelSlot>
-        <PanelSlot>
-          <NuclearPanel />
+          <div id="quakes" className="scroll-mt-16"><EarthquakesPanel /></div>
         </PanelSlot>
 
-        {/* Row 6: World Clock */}
         <PanelSlot>
-          <WorldClockPanel />
+          <div id="markets" className="scroll-mt-16"><MarketsPanel /></div>
+        </PanelSlot>
+        <PanelSlot>
+          <div id="fires" className="scroll-mt-16"><FiresPanel /></div>
+        </PanelSlot>
+        <PanelSlot>
+          <div id="nuclear" className="scroll-mt-16"><NuclearPanel /></div>
+        </PanelSlot>
+
+        <PanelSlot>
+          <div id="clock" className="scroll-mt-16"><WorldClockPanel /></div>
         </PanelSlot>
       </DashboardGrid>
     </>

@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { CommandPalette } from "@/components/ui/command-palette";
+import { CountryModal } from "@/components/modals/country-modal";
+import { SettingsModal } from "@/components/modals/settings-modal";
 
 export default function DashboardLayout({
   children,
@@ -12,6 +14,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -28,15 +32,31 @@ export default function DashboardLayout({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  const handleCountrySelect = useCallback((name: string) => {
+    setSelectedCountry(name);
+  }, []);
+
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
       <div className="flex-1 flex flex-col min-w-0">
-        <Header onOpenSearch={() => setSearchOpen(true)} />
+        <Header onOpenSearch={() => setSearchOpen(true)} onOpenSettings={() => setSettingsOpen(true)} />
         <main className="flex-1">{children}</main>
       </div>
       <MobileNav />
-      <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <CommandPalette
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onCountrySelect={handleCountrySelect}
+      />
+      <CountryModal
+        countryName={selectedCountry}
+        onClose={() => setSelectedCountry(null)}
+      />
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
     </div>
   );
 }
