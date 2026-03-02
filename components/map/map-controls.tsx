@@ -36,6 +36,7 @@ const LAYER_CONFIG: { key: keyof MapLayers; label: string; color: string }[] = [
   { key: "waterways", label: "Waterways", color: "#22d3ee" },
   { key: "economic", label: "Economic", color: "#22c55e" },
   { key: "earthquakes", label: "Earthquakes", color: "#eab308" },
+  { key: "daynight", label: "Day/Night", color: "#475569" },
 ];
 
 export function MapControls({
