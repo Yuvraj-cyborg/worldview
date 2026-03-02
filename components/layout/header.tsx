@@ -1,14 +1,15 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Search, Bell, Sun, Moon, Globe } from "lucide-react";
+import { Search, Bell, Sun, Moon, Globe, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   onOpenSearch?: () => void;
+  onOpenSettings?: () => void;
 }
 
-export function Header({ onOpenSearch }: HeaderProps) {
+export function Header({ onOpenSearch, onOpenSettings }: HeaderProps) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -51,6 +52,14 @@ export function Header({ onOpenSearch }: HeaderProps) {
             <span className="absolute -top-0.5 -right-0.5 size-3.5 rounded-full bg-threat-critical text-[9px] font-bold text-white flex items-center justify-center">
               3
             </span>
+          </button>
+
+          <button
+            onClick={onOpenSettings}
+            className="size-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            aria-label="Settings"
+          >
+            <Settings className="size-4" />
           </button>
 
           <button
