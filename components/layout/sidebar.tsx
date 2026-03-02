@@ -1,53 +1,50 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
-  Globe,
-  Newspaper,
-  Shield,
-  TrendingUp,
-  Radio,
-  Target,
-  BarChart3,
-  MessageSquare,
-  Activity,
-  Crosshair,
-  Flame,
-  Radiation,
-  Clock,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
+  Globe, Newspaper, Shield, TrendingUp, Radio, Target, BarChart3,
+  Activity, Crosshair, Flame, Radiation, Clock, Settings,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
   icon: React.ElementType;
   label: string;
-  href: string;
+  sectionId: string;
   id: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: Globe, label: "Overview", href: "/", id: "overview" },
-  { icon: Newspaper, label: "News Feed", href: "/#news", id: "news" },
-  { icon: Target, label: "Focal Points", href: "/#focal", id: "focal" },
-  { icon: Shield, label: "Conflicts", href: "/#conflicts", id: "conflicts" },
-  { icon: Crosshair, label: "UCDP Events", href: "/#ucdp", id: "ucdp" },
-  { icon: Radio, label: "Signals", href: "/#signals", id: "signals" },
-  { icon: BarChart3, label: "CII Index", href: "/#cii", id: "cii" },
-  { icon: Activity, label: "Earthquakes", href: "/#quakes", id: "quakes" },
-  { icon: TrendingUp, label: "Markets", href: "/#markets", id: "markets" },
-  { icon: Flame, label: "Sat. Fires", href: "/#fires", id: "fires" },
-  { icon: Radiation, label: "Nuclear", href: "/#nuclear", id: "nuclear" },
-  { icon: Clock, label: "World Clock", href: "/#clock", id: "clock" },
-  { icon: MessageSquare, label: "Analysis", href: "/analysis", id: "analysis" },
+  { icon: Globe, label: "Overview", sectionId: "map", id: "overview" },
+  { icon: Newspaper, label: "News Feed", sectionId: "news", id: "news" },
+  { icon: Target, label: "Focal Points", sectionId: "focal", id: "focal" },
+  { icon: Shield, label: "Conflicts", sectionId: "conflicts", id: "conflicts" },
+  { icon: Crosshair, label: "UCDP Events", sectionId: "ucdp", id: "ucdp" },
+  { icon: Radio, label: "Signals", sectionId: "signals", id: "signals" },
+  { icon: BarChart3, label: "CII Index", sectionId: "cii", id: "cii" },
+  { icon: Activity, label: "Earthquakes", sectionId: "quakes", id: "quakes" },
+  { icon: TrendingUp, label: "Markets", sectionId: "markets", id: "markets" },
+  { icon: Flame, label: "Sat. Fires", sectionId: "fires", id: "fires" },
+  { icon: Radiation, label: "Nuclear", sectionId: "nuclear", id: "nuclear" },
+  { icon: Clock, label: "World Clock", sectionId: "clock", id: "clock" },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onOpenSettings?: () => void;
+}
+
+export function Sidebar({ onOpenSettings }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(true);
   const [active, setActive] = useState("overview");
+
+  const handleNav = (item: NavItem) => {
+    setActive(item.id);
+    const el = document.getElementById(item.sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <aside
@@ -74,14 +71,13 @@ export function Sidebar() {
         </button>
       </div>
 
-      <nav className="flex-1 py-2 px-2 space-y-0.5">
+      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
         {NAV_ITEMS.map((item) => (
-          <Link
+          <button
             key={item.id}
-            href={item.href}
-            onClick={() => setActive(item.id)}
+            onClick={() => handleNav(item)}
             className={cn(
-              "flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors",
+              "w-full flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors",
               active === item.id
                 ? "bg-wv-accent-muted text-wv-accent font-medium"
                 : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -89,18 +85,18 @@ export function Sidebar() {
           >
             <item.icon className="size-4 shrink-0" />
             {!collapsed && <span className="truncate">{item.label}</span>}
-          </Link>
+          </button>
         ))}
       </nav>
 
       <div className="py-2 px-2 border-t border-border">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        <button
+          onClick={onOpenSettings}
+          className="w-full flex items-center gap-3 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           <Settings className="size-4 shrink-0" />
           {!collapsed && <span>Settings</span>}
-        </Link>
+        </button>
       </div>
     </aside>
   );
