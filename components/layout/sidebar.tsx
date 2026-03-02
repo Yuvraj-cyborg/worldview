@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   Globe, Newspaper, Shield, TrendingUp, Radio, Target, BarChart3,
   Activity, Crosshair, Flame, Radiation, Clock, Settings,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Camera, Tv,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ interface NavItem {
   label: string;
   sectionId: string;
   id: string;
+  href?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -28,6 +29,8 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Flame, label: "Sat. Fires", sectionId: "fires", id: "fires" },
   { icon: Radiation, label: "Nuclear", sectionId: "nuclear", id: "nuclear" },
   { icon: Clock, label: "World Clock", sectionId: "clock", id: "clock" },
+  { icon: Camera, label: "Live Cams", sectionId: "livecams", id: "livecams" },
+  { icon: Tv, label: "Channels", sectionId: "channels", id: "channels", href: "/channels" },
 ];
 
 interface SidebarProps {
@@ -40,6 +43,10 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
 
   const handleNav = (item: NavItem) => {
     setActive(item.id);
+    if (item.href) {
+      window.location.href = item.href;
+      return;
+    }
     const el = document.getElementById(item.sectionId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
