@@ -39,27 +39,24 @@ export default function DashboardPage() {
         <MapPanel />
       </div>
 
+      {/* ── TOP ROW: News Feed + Live Cams (2 columns only) ───── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 md:px-6 items-start">
+        <div id="news" className="scroll-mt-16"><NewsPanel /></div>
+        <div id="livecams" className="scroll-mt-16"><LiveCamsPanel /></div>
+      </div>
+
+      {/* ── REST: 3-column grid ───────────────────────────────── */}
       <DashboardGrid>
-        {/* ── Top: News Feed + Live Cams ──────────────────── */}
-        <PanelSlot>
-          <div id="news" className="scroll-mt-16"><NewsPanel /></div>
-        </PanelSlot>
-        <PanelSlot>
-          <div id="livecams" className="scroll-mt-16"><LiveCamsPanel /></div>
-        </PanelSlot>
         <PanelSlot>
           <div id="signals" className="scroll-mt-16"><SignalsPanel /></div>
         </PanelSlot>
-
-        {/* ── Row 2: Intel Feeds ──────────────────────────── */}
         <PanelSlot>
           <div id="focal" className="scroll-mt-16"><FocalPointsPanel /></div>
         </PanelSlot>
-        <PanelSlot span="2">
+        <PanelSlot>
           <div id="gdelt" className="scroll-mt-16"><GdeltPanel /></div>
         </PanelSlot>
 
-        {/* ── Row 3: Active Data ──────────────────────────── */}
         <PanelSlot>
           <div id="cii" className="scroll-mt-16"><CIIPanel /></div>
         </PanelSlot>
@@ -73,8 +70,11 @@ export default function DashboardPage() {
         <PanelSlot>
           <div id="clock" className="scroll-mt-16"><WorldClockPanel /></div>
         </PanelSlot>
+        <PanelSlot>
+          <div id="nuclear" className="scroll-mt-16"><NuclearPanel /></div>
+        </PanelSlot>
 
-        {/* ── Bottom: Inactive / No-Data Panels ───────────── */}
+        {/* ── Bottom: Inactive / No-Data ──────────────────────── */}
         <PanelSlot>
           <div id="conflicts" className="scroll-mt-16"><ConflictsPanel /></div>
         </PanelSlot>
@@ -84,12 +84,7 @@ export default function DashboardPage() {
         <PanelSlot>
           <div id="fires" className="scroll-mt-16"><FiresPanel /></div>
         </PanelSlot>
-        <PanelSlot>
-          <div id="nuclear" className="scroll-mt-16"><NuclearPanel /></div>
-        </PanelSlot>
       </DashboardGrid>
     </>
   );
 }
-
-

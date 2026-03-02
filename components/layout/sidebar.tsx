@@ -47,6 +47,10 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
       window.location.href = item.href;
       return;
     }
+    if (item.id === "overview") {
+      window.location.href = "/";
+      return;
+    }
     const el = document.getElementById(item.sectionId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
