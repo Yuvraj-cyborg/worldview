@@ -18,11 +18,11 @@ export function Header({ onOpenSearch, onOpenSettings }: HeaderProps) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 md:hidden">
             <Globe className="size-5 text-wv-accent" />
-            <span className="text-sm font-semibold tracking-tight">WorldView</span>
+            <span className="text-sm font-semibold tracking-tight">GeoTrack</span>
           </div>
           <div className="hidden md:flex items-center gap-2">
             <Globe className="size-5 text-wv-accent" />
-            <span className="text-sm font-semibold tracking-tight">WorldView</span>
+            <span className="text-sm font-semibold tracking-tight">GeoTrack</span>
             <span className="text-[11px] font-mono text-muted-foreground ml-1">v1.0</span>
           </div>
         </div>

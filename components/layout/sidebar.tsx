@@ -56,7 +56,7 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
       <div className="flex items-center h-14 px-3 border-b border-border">
         {!collapsed && (
           <span className="text-sm font-semibold tracking-tight text-foreground truncate ml-1">
-            WorldView
+            GeoTrack
           </span>
         )}
         <button

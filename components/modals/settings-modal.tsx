@@ -191,9 +191,9 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
 
               {activeTab === "about" && (
                 <div className="space-y-5">
-                  <h3 className="text-sm font-semibold">About WorldView</h3>
+                  <h3 className="text-sm font-semibold">About GeoTrack</h3>
                   <div className="space-y-3 text-xs text-muted-foreground">
-                    <p>WorldView v1.0 — Global Intelligence Dashboard</p>
+                    <p>GeoTrack v1.0 — Global Intelligence Dashboard</p>
                     <p>Real-time monitoring of geopolitical events, conflicts, natural disasters, markets, and global infrastructure.</p>
                     <div className="pt-3 border-t border-border space-y-1.5">
                       <p>198 news sources across 15 categories</p>

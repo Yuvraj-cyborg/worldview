@@ -76,7 +76,7 @@ export function ChatInterface() {
         {messages.length === 0 && (
           <div className="text-center py-16 text-text-muted">
             <Bot className="size-12 mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium">Ask WorldView anything</p>
+            <p className="text-lg font-medium">Ask GeoTrack anything</p>
             <p className="text-sm mt-1">Try: "What's happening in the Red Sea?" or "Analyze the Ukraine front"</p>
             <div className="flex flex-wrap justify-center gap-2 mt-6">
               {[
