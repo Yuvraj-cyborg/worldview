@@ -85,7 +85,7 @@ export function UcdpEventsPanel() {
       ) : filtered.length === 0 ? (
         <div className="p-4 text-sm text-text-muted">No events for this category.</div>
       ) : (
-        <div className="divide-y divide-border/50 max-h-[500px] overflow-y-auto">
+        <div className="divide-y divide-border/50 overflow-y-auto">
           {filtered.slice(0, 40).map((e) => (
             <div key={e.id} className="px-4 py-2.5 hover:bg-muted/30 transition-colors">
               <div className="flex items-start justify-between gap-2">

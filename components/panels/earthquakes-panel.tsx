@@ -55,7 +55,7 @@ export function EarthquakesPanel() {
               {significant.length} significant (M5+) in last 24h
             </div>
           )}
-          <div className="divide-y divide-border/50 max-h-[400px] overflow-y-auto">
+          <div className="divide-y divide-border/50 overflow-y-auto">
             {quakes.slice(0, 25).map((eq) => (
               <a
                 key={eq.id}

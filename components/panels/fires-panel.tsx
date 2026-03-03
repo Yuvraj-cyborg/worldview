@@ -60,7 +60,7 @@ export function FiresPanel() {
               <span className="font-mono text-threat-high font-semibold">{highConfidence.length}</span>
             </div>
           </div>
-          <div className="divide-y divide-border/50 max-h-[400px] overflow-y-auto">
+          <div className="divide-y divide-border/50 overflow-y-auto">
             {fires.slice(0, 30).map((f, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2 hover:bg-muted/30 transition-colors">
                 <span className={cn("text-sm font-mono font-bold min-w-[44px] text-center", getBrightnessColor(f.brightness))}>

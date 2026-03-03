@@ -80,7 +80,7 @@ export function GdeltPanel() {
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-border/50 max-h-[500px] overflow-y-auto">
+        <div className="divide-y divide-border/50 overflow-y-auto">
           {articles.slice(0, 30).map((a, i) => {
             const tone = a.tone ?? 0;
             const toneColor = tone < -3 ? "text-negative" : tone > 3 ? "text-positive" : "text-text-muted";

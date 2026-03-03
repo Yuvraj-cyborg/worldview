@@ -31,7 +31,7 @@ export function NuclearPanel() {
       timestamp={`${NUCLEAR_FACILITIES.length} tracked`}
       noPadding
     >
-      <div className="divide-y divide-border/50 max-h-[500px] overflow-y-auto">
+      <div className="divide-y divide-border/50 overflow-y-auto">
         {(["weapons", "enrichment", "plant"] as const).map((type) => (
           <div key={type}>
             <div className="px-4 py-2 bg-surface-1">

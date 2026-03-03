@@ -42,7 +42,7 @@ export function Panel({
           )}
         </div>
       </div>
-      <div className={cn(!noPadding && "p-4")}>{children}</div>
+      <div className={cn("max-h-[420px] overflow-y-auto", !noPadding && "p-4")}>{children}</div>
     </div>
   );
 }
