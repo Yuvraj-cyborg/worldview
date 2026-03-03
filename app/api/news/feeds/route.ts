@@ -1,34 +1,45 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { XMLParser } from "fast-xml-parser";
 import { FEEDS, INTEL_FEEDS } from "@/lib/data/feeds";
-
-const ALL_FEEDS = [...FEEDS, ...INTEL_FEEDS];
 import { clusterNews } from "@/lib/services/clustering";
-import { cachedFetch, deleteCachedKey } from "@/lib/cache/redis";
+import { getCachedJson, setCachedJson, deleteCachedKey } from "@/lib/cache/redis";
 import { getCircuitBreaker } from "@/lib/utils/circuit-breaker";
 import type { NewsItem, ClusteredEvent } from "@/lib/types";
+
+// Sort feeds by tier so the most important sources are fetched first
+// Tier 1 (wire services/govt) → Tier 2 (major outlets) → Tier 3 (specialty) → Tier 4 (aggregators)
+const ALL_FEEDS = [...FEEDS, ...INTEL_FEEDS].sort((a, b) => (a.tier ?? 4) - (b.tier ?? 4));
 
 // ─── CRITICAL: Force dynamic so Next.js never static-caches this route ───
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-// Vercel max function duration — 60s on Pro, 10s on Hobby (ignored on Hobby)
-export const maxDuration = 60;
+export const maxDuration = 60; // 60s on Pro, ignored on Hobby (10s hard limit)
 
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@_",
-  // CRITICAL: Decode HTML entities in text content (&#039; → ', &#xD; → CR, etc.)
   htmlEntities: true,
   processEntities: true,
 });
 
-const FEED_TIMEOUT_MS = 6_000;   // 6s per feed (keep low for Vercel)
-const BATCH_SIZE = 30;            // Fetch 30 feeds at a time to avoid socket exhaustion
-const CACHE_KEY = "wv:news:feeds:v3";
-const CACHE_TTL = 150;            // 2.5 min fresh TTL (grace = 3x = 7.5 min)
-const MAX_ITEMS_PER_FEED = 20;
-const MAX_TOTAL_ITEMS = 500;
-const MAX_CLUSTERS = 100;
+// ─── Tuning constants ───────────────────────────────────────────────────
+const FEED_TIMEOUT_MS = 5_000;    // 5s per feed (keep tight for Vercel)
+const BATCH_SIZE = 25;             // 25 feeds per concurrent batch
+const FETCH_BUDGET_MS = 7_500;     // 7.5s max for inline fetch (cold cache)
+const AFTER_BUDGET_MS = 9_000;     // 9s max for after() background enrichment
+const CACHE_KEY = "wv:news:feeds:v4";
+const CACHE_TTL = 180;             // 3 min fresh TTL
+const CACHE_GRACE = CACHE_TTL * 3; // 9 min grace for stale-while-revalidate
+const MAX_ITEMS_PER_FEED = 15;
+const MAX_TOTAL_ITEMS = 400;
+const MAX_CLUSTERS = 80;
+
+/** Envelope stored in Redis with metadata */
+interface CacheEnvelope {
+  data: FeedResponse;
+  cachedAt: number;
+  ttl: number;
+}
 
 // ─── Feed health tracking (in-memory per instance) ──────────────────────
 const feedHealth = new Map<string, { successes: number; failures: number; lastError?: string; lastSuccess?: number }>();
@@ -251,17 +262,32 @@ interface FeedResponse {
   totalItems: number;
   feedsLoaded: number;
   feedsFailed: number;
-  fetchedAt: string; // ISO timestamp of when data was actually fetched
+  feedsTotal: number;
+  fetchedAt: string;
   fromCache: boolean;
+  partial: boolean;
 }
 
-/** Fetch feeds in batches to avoid overwhelming Vercel's connection limits */
-async function fetchFeedsBatched(feeds: typeof ALL_FEEDS): Promise<{ items: NewsItem[]; loaded: number; failed: number }> {
+// ─── Time-budgeted batch fetcher ────────────────────────────────────────
+// Fetches as many feeds as possible within the time budget, starting with
+// the highest-priority feeds (tier-sorted). Stops early when budget runs out.
+async function fetchFeedsWithBudget(
+  feeds: typeof ALL_FEEDS,
+  budgetMs: number
+): Promise<{ items: NewsItem[]; loaded: number; failed: number; complete: boolean }> {
   const items: NewsItem[] = [];
   let loaded = 0;
   let failed = 0;
+  const start = Date.now();
 
   for (let i = 0; i < feeds.length; i += BATCH_SIZE) {
+    const elapsed = Date.now() - start;
+    // Stop 1s before budget to leave room for clustering + response
+    if (elapsed >= budgetMs - 1_000) {
+      console.log(`[news/feeds] Budget exhausted at ${elapsed}ms, processed ${loaded + failed}/${feeds.length} feeds`);
+      break;
+    }
+
     const batch = feeds.slice(i, i + BATCH_SIZE);
     const results = await Promise.allSettled(
       batch.map((feed) => fetchSingleFeed(feed))
@@ -277,38 +303,35 @@ async function fetchFeedsBatched(feeds: typeof ALL_FEEDS): Promise<{ items: News
     }
   }
 
-  return { items, loaded, failed };
+  return { items, loaded, failed, complete: (loaded + failed) >= feeds.length };
 }
 
-async function fetchAllFeeds(): Promise<FeedResponse> {
-  const startTime = Date.now();
-
-  const { items: allItems, loaded: feedsLoaded, failed: feedsFailed } = await fetchFeedsBatched(ALL_FEEDS);
-
-  // Deduplicate by normalized title
+// ─── Assemble response from raw items ───────────────────────────────────
+function assembleResponse(
+  items: NewsItem[],
+  feedsLoaded: number,
+  feedsFailed: number,
+  partial: boolean,
+): FeedResponse {
   const seen = new Set<string>();
-  const deduped = allItems.filter((item) => {
+  const deduped = items.filter((item) => {
     const key = item.title.toLowerCase().trim().replace(/\s+/g, " ");
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
-  // Sort by date (newest first)
   deduped.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
 
-  // Filter out items older than 72 hours (stale news cleanup)
   const cutoff = Date.now() - 72 * 60 * 60 * 1000;
   const recent = deduped.filter((item) => item.pubDate.getTime() > cutoff);
-
   const clusters = clusterNews(recent.slice(0, MAX_TOTAL_ITEMS));
-  const elapsed = Date.now() - startTime;
 
   console.log(
-    `[news/feeds] Fetched ${feedsLoaded}/${ALL_FEEDS.length} feeds, ` +
-    `${feedsFailed} failed, ${allItems.length} raw items, ` +
-    `${deduped.length} deduped, ${recent.length} recent (<72h), ` +
-    `${clusters.length} clusters in ${elapsed}ms`
+    `[news/feeds] ${partial ? "PARTIAL" : "FULL"}: ` +
+    `${feedsLoaded}/${ALL_FEEDS.length} feeds, ${feedsFailed} failed, ` +
+    `${items.length} raw → ${deduped.length} deduped → ${recent.length} recent → ` +
+    `${clusters.length} clusters`
   );
 
   return {
@@ -316,9 +339,42 @@ async function fetchAllFeeds(): Promise<FeedResponse> {
     totalItems: recent.length,
     feedsLoaded,
     feedsFailed,
+    feedsTotal: ALL_FEEDS.length,
     fetchedAt: new Date().toISOString(),
     fromCache: false,
+    partial,
   };
+}
+
+/** Write response to Redis cache */
+async function writeCache(data: FeedResponse): Promise<void> {
+  const envelope: CacheEnvelope = { data, cachedAt: Date.now(), ttl: CACHE_TTL };
+  await setCachedJson(CACHE_KEY, envelope, CACHE_GRACE);
+}
+
+/** Background refresh — called via after(), respects time budget */
+async function backgroundRefresh(): Promise<void> {
+  try {
+    const { items, loaded, failed, complete } = await fetchFeedsWithBudget(ALL_FEEDS, AFTER_BUDGET_MS);
+    if (items.length > 0) {
+      const response = assembleResponse(items, loaded, failed, !complete);
+      await writeCache(response);
+      console.log(`[news/feeds] after() refreshed cache: ${loaded} feeds, ${items.length} items`);
+    }
+  } catch (err) {
+    console.warn("[news/feeds] after() refresh failed:", err instanceof Error ? err.message : err);
+  }
+}
+
+function jsonResponse(data: FeedResponse | (FeedResponse & { fromCache: boolean }), source: string) {
+  return NextResponse.json(data, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "X-Data-Source": source,
+      "X-Fetched-At": data.fetchedAt,
+      "X-Feeds-Loaded": String(data.feedsLoaded),
+    },
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -326,52 +382,71 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const forceRefresh = searchParams.get("force") === "true";
 
-    const data = await cachedFetch<FeedResponse>(
-      CACHE_KEY,
-      CACHE_TTL,
-      fetchAllFeeds,
-      { forceRefresh }
-    );
+    // ─── 1. Try cache first (unless force refresh) ────────────────────
+    if (!forceRefresh) {
+      const envelope = await getCachedJson<CacheEnvelope>(CACHE_KEY);
 
-    if (!data) {
-      // Cache and fetcher both failed — try direct fetch as last resort
-      console.warn("[api/news/feeds] cachedFetch returned null, trying direct fetch");
-      const fresh = await fetchAllFeeds();
-      return NextResponse.json(fresh, {
-        headers: {
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-          "X-Data-Source": "direct-fallback",
-          "X-Fetched-At": fresh.fetchedAt,
-        },
-      });
+      if (envelope?.data != null && envelope.cachedAt) {
+        const ageMs = Date.now() - envelope.cachedAt;
+        const ttlMs = (envelope.ttl || CACHE_TTL) * 1_000;
+        const graceMs = CACHE_GRACE * 1_000;
+
+        if (ageMs < ttlMs) {
+          // FRESH cache — return immediately, no background work
+          return jsonResponse({ ...envelope.data, fromCache: true }, "cache-fresh");
+        }
+
+        if (ageMs < graceMs) {
+          // STALE but within grace — return stale data instantly,
+          // then use after() to refresh in background.
+          // Since response is instant (~100ms), after() gets ~9.9s on Hobby.
+          after(backgroundRefresh);
+          return jsonResponse({ ...envelope.data, fromCache: true }, "cache-swr");
+        }
+
+        // Past grace — fall through to fresh fetch
+        console.log(`[news/feeds] Cache expired (age: ${Math.round(ageMs / 1000)}s), fetching fresh`);
+      }
     }
 
-    return NextResponse.json(
-      { ...data, fromCache: data.fromCache !== false },
-      {
-        headers: {
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-          "X-Data-Source": data.fromCache !== false ? "cache" : "fresh",
-          "X-Fetched-At": data.fetchedAt ?? new Date().toISOString(),
+    // ─── 2. No cache / expired / force — time-budgeted inline fetch ───
+    // Fetches highest-priority feeds first, stops when budget runs out.
+    // On Hobby (10s limit), this gets tier 1-2 feeds (~100 feeds).
+    const { items, loaded, failed, complete } = await fetchFeedsWithBudget(ALL_FEEDS, FETCH_BUDGET_MS);
+
+    if (items.length === 0) {
+      // Nothing at all — return 503 so client retries
+      return NextResponse.json(
+        {
+          clusters: [], totalItems: 0, feedsLoaded: 0,
+          feedsFailed: ALL_FEEDS.length, feedsTotal: ALL_FEEDS.length,
+          fetchedAt: new Date().toISOString(), fromCache: false, partial: true,
+          error: "No feeds available — retrying on next poll",
         },
-      }
-    );
+        { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "30" } }
+      );
+    }
+
+    const response = assembleResponse(items, loaded, failed, !complete);
+    // Cache whatever we got (even partial) so next request is instant
+    await writeCache(response);
+
+    // If partial, schedule after() to continue fetching remaining feeds
+    if (!complete) {
+      after(backgroundRefresh);
+    }
+
+    return jsonResponse(response, complete ? "fresh-full" : "fresh-partial");
   } catch (err) {
-    console.error("[api/news/feeds] fatal error:", err);
+    console.error("[api/news/feeds] fatal:", err);
     return NextResponse.json(
       {
-        clusters: [],
-        totalItems: 0,
-        feedsLoaded: 0,
-        feedsFailed: ALL_FEEDS.length,
-        fetchedAt: new Date().toISOString(),
-        fromCache: false,
-        error: "Failed to fetch feeds",
+        clusters: [], totalItems: 0, feedsLoaded: 0,
+        feedsFailed: ALL_FEEDS.length, feedsTotal: ALL_FEEDS.length,
+        fetchedAt: new Date().toISOString(), fromCache: false, partial: true,
+        error: "Internal error",
       },
-      {
-        status: 500,
-        headers: { "Cache-Control": "no-store" },
-      }
+      { status: 500, headers: { "Cache-Control": "no-store" } }
     );
   }
 }

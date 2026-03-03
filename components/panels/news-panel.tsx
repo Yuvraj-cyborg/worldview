@@ -14,13 +14,21 @@ interface NewsData {
   totalItems: number;
   feedsLoaded: number;
   feedsFailed?: number;
+  feedsTotal?: number;
   fetchedAt?: string;
   fromCache?: boolean;
+  partial?: boolean;
   error?: string;
 }
 
 const fetcher = async (url: string) => {
   const resp = await fetch(url, { cache: "no-store" });
+  // On 503 (no feeds yet), return empty so SWR retries on next interval
+  if (resp.status === 503) {
+    const json = await resp.json();
+    json.clusters = [];
+    return json as NewsData;
+  }
   if (!resp.ok) throw new Error(`Feed fetch failed: ${resp.status}`);
   const json = await resp.json();
   json.clusters = json.clusters?.map((c: Record<string, unknown>) => ({
