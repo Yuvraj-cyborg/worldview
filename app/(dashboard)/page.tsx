@@ -48,35 +48,35 @@ export default function DashboardPage() {
       {/* ── REST: 3-column grid ───────────────────────────────── */}
       <DashboardGrid>
         <PanelSlot>
-          <div id="signals" className="scroll-mt-16"><SignalsPanel /></div>
-        </PanelSlot>
-        <PanelSlot>
           <div id="focal" className="scroll-mt-16"><FocalPointsPanel /></div>
         </PanelSlot>
         <PanelSlot>
           <div id="gdelt" className="scroll-mt-16"><GdeltPanel /></div>
         </PanelSlot>
-
         <PanelSlot>
           <div id="cii" className="scroll-mt-16"><CIIPanel /></div>
         </PanelSlot>
+
         <PanelSlot>
           <div id="quakes" className="scroll-mt-16"><EarthquakesPanel /></div>
         </PanelSlot>
         <PanelSlot>
           <div id="markets" className="scroll-mt-16"><MarketsPanel /></div>
         </PanelSlot>
-
         <PanelSlot>
           <div id="clock" className="scroll-mt-16"><WorldClockPanel /></div>
         </PanelSlot>
+
         <PanelSlot>
           <div id="nuclear" className="scroll-mt-16"><NuclearPanel /></div>
         </PanelSlot>
-
-        {/* ── Bottom: Inactive / No-Data ──────────────────────── */}
         <PanelSlot>
           <div id="conflicts" className="scroll-mt-16"><ConflictsPanel /></div>
+        </PanelSlot>
+
+        {/* ── Bottom ──────────────────────────────────────────── */}
+        <PanelSlot>
+          <div id="signals" className="scroll-mt-16"><SignalsPanel /></div>
         </PanelSlot>
         <PanelSlot>
           <div id="ucdp" className="scroll-mt-16"><UcdpEventsPanel /></div>
