@@ -11,6 +11,8 @@ import type { NewsItem, ClusteredEvent } from "@/lib/types";
 // ─── CRITICAL: Force dynamic so Next.js never static-caches this route ───
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+// Vercel max function duration — 60s on Pro, 10s on Hobby (ignored on Hobby)
+export const maxDuration = 60;
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -20,12 +22,13 @@ const parser = new XMLParser({
   processEntities: true,
 });
 
-const FEED_TIMEOUT_MS = 10_000;
-const CACHE_KEY = "wv:news:feeds:v2";
-const CACHE_TTL = 120; // 2 minutes — fresh TTL (grace period = 3x = 6 min)
-const MAX_ITEMS_PER_FEED = 25;
-const MAX_TOTAL_ITEMS = 600;
-const MAX_CLUSTERS = 120;
+const FEED_TIMEOUT_MS = 6_000;   // 6s per feed (keep low for Vercel)
+const BATCH_SIZE = 30;            // Fetch 30 feeds at a time to avoid socket exhaustion
+const CACHE_KEY = "wv:news:feeds:v3";
+const CACHE_TTL = 150;            // 2.5 min fresh TTL (grace = 3x = 7.5 min)
+const MAX_ITEMS_PER_FEED = 20;
+const MAX_TOTAL_ITEMS = 500;
+const MAX_CLUSTERS = 100;
 
 // ─── Feed health tracking (in-memory per instance) ──────────────────────
 const feedHealth = new Map<string, { successes: number; failures: number; lastError?: string; lastSuccess?: number }>();
@@ -252,26 +255,35 @@ interface FeedResponse {
   fromCache: boolean;
 }
 
+/** Fetch feeds in batches to avoid overwhelming Vercel's connection limits */
+async function fetchFeedsBatched(feeds: typeof ALL_FEEDS): Promise<{ items: NewsItem[]; loaded: number; failed: number }> {
+  const items: NewsItem[] = [];
+  let loaded = 0;
+  let failed = 0;
+
+  for (let i = 0; i < feeds.length; i += BATCH_SIZE) {
+    const batch = feeds.slice(i, i + BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map((feed) => fetchSingleFeed(feed))
+    );
+
+    for (const result of results) {
+      if (result.status === "fulfilled" && result.value.length > 0) {
+        items.push(...result.value);
+        loaded++;
+      } else {
+        failed++;
+      }
+    }
+  }
+
+  return { items, loaded, failed };
+}
+
 async function fetchAllFeeds(): Promise<FeedResponse> {
   const startTime = Date.now();
 
-  // Fetch all feeds in parallel with individual circuit breakers
-  const feedResults = await Promise.allSettled(
-    ALL_FEEDS.map((feed) => fetchSingleFeed(feed))
-  );
-
-  const allItems: NewsItem[] = [];
-  let feedsLoaded = 0;
-  let feedsFailed = 0;
-
-  for (const result of feedResults) {
-    if (result.status === "fulfilled" && result.value.length > 0) {
-      allItems.push(...result.value);
-      feedsLoaded++;
-    } else {
-      feedsFailed++;
-    }
-  }
+  const { items: allItems, loaded: feedsLoaded, failed: feedsFailed } = await fetchFeedsBatched(ALL_FEEDS);
 
   // Deduplicate by normalized title
   const seen = new Set<string>();

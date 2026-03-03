@@ -170,12 +170,26 @@ export function clusterNews(items: NewsItem[]): ClusteredEvent[] {
     };
   });
 
-  result.sort((a, b) => {
-    const threatDiff = (b.threat ? { critical: 5, high: 4, medium: 3, low: 2, info: 1 }[b.threat.level] : 0)
-      - (a.threat ? { critical: 5, high: 4, medium: 3, low: 2, info: 1 }[a.threat.level] : 0);
-    if (threatDiff !== 0) return threatDiff;
-    return b.lastUpdated.getTime() - a.lastUpdated.getTime();
-  });
+  // Sort by composite score: recency matters most, threat level is a boost
+  // This prevents old CRITICAL items from permanently sitting at the top
+  const now = Date.now();
+  const HOUR_MS = 3_600_000;
+
+  function sortScore(c: ClusteredEvent): number {
+    const threatWeight = c.threat
+      ? { critical: 2.0, high: 1.5, medium: 1.0, low: 0.5, info: 0.2 }[c.threat.level] ?? 0
+      : 0;
+    // Recency: 1.0 for items from the last hour, decaying to 0 over 48h
+    const ageHours = Math.max(0, (now - c.lastUpdated.getTime()) / HOUR_MS);
+    const recency = Math.max(0, 1 - ageHours / 48);
+    // Source count boost: more sources = more important
+    const sourceBoost = Math.min(c.sourceCount / 5, 1) * 0.3;
+    // Velocity boost
+    const velBoost = c.velocity?.level === "spike" ? 0.5 : c.velocity?.level === "elevated" ? 0.2 : 0;
+    return recency * 3 + threatWeight + sourceBoost + velBoost;
+  }
+
+  result.sort((a, b) => sortScore(b) - sortScore(a));
 
   return result;
 }
