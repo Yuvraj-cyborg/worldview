@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { Panel, PanelSkeleton } from "@/components/ui/panel";
 import { ThreatBadge } from "@/components/intelligence/threat-badge";
-import { Newspaper, ChevronDown, ExternalLink } from "lucide-react";
+import { Newspaper, ChevronDown, ExternalLink, RefreshCw, AlertTriangle } from "lucide-react";
 import type { ClusteredEvent, ThreatLevel } from "@/lib/types";
 import { timeAgo } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
@@ -13,17 +13,22 @@ interface NewsData {
   clusters: ClusteredEvent[];
   totalItems: number;
   feedsLoaded: number;
+  feedsFailed?: number;
+  fetchedAt?: string;
+  fromCache?: boolean;
+  error?: string;
 }
 
 const fetcher = async (url: string) => {
-  const resp = await fetch(url);
+  const resp = await fetch(url, { cache: "no-store" });
+  if (!resp.ok) throw new Error(`Feed fetch failed: ${resp.status}`);
   const json = await resp.json();
   json.clusters = json.clusters?.map((c: Record<string, unknown>) => ({
     ...c,
     firstSeen: new Date(c.firstSeen as string),
     lastUpdated: new Date(c.lastUpdated as string),
   })) ?? [];
-  return json;
+  return json as NewsData;
 };
 
 const VELOCITY_ICONS: Record<string, string> = {
@@ -143,26 +148,71 @@ function NewsItemRow({
 }
 
 export function NewsPanel() {
-  const { data, isLoading } = useSWR<NewsData>(
+  const { data, isLoading, error, mutate, isValidating } = useSWR<NewsData>(
     "/api/news/feeds",
     fetcher,
-    { refreshInterval: 60_000 }
+    {
+      refreshInterval: 90_000,      // Poll every 90s (server handles SWR caching)
+      revalidateOnFocus: true,       // Refresh when tab regains focus
+      revalidateOnReconnect: true,   // Refresh on network reconnect
+      dedupingInterval: 30_000,      // Dedup rapid re-fetches within 30s
+      errorRetryCount: 3,
+      errorRetryInterval: 10_000,
+      keepPreviousData: true,        // Keep showing old data while revalidating
+    }
   );
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCount, setShowCount] = useState(4);
   const [activeTab, setActiveTab] = useState("all");
+
+  const handleForceRefresh = useCallback(() => {
+    // Force-refresh bypasses all caches
+    mutate(
+      fetcher("/api/news/feeds?force=true"),
+      { revalidate: false }
+    );
+  }, [mutate]);
 
   const clusters = data?.clusters ?? [];
   const filtered = activeTab === "all"
     ? clusters
     : clusters.filter((c) => c.category === activeTab);
 
+  // Freshness indicator
+  const fetchedAt = data?.fetchedAt ? new Date(data.fetchedAt) : null;
+  const dataAge = fetchedAt ? Math.round((Date.now() - fetchedAt.getTime()) / 1000) : null;
+  const isStale = dataAge !== null && dataAge > 300; // > 5 min = stale
+
+  const statusText = data
+    ? `${data.feedsLoaded} feeds${data.feedsFailed ? ` · ${data.feedsFailed} failed` : ""} · ${data.totalItems} items${fetchedAt ? ` · ${timeAgo(fetchedAt)}` : ""}`
+    : undefined;
+
   return (
     <Panel
       title="News Feed"
       icon={<Newspaper className="size-4" />}
-      timestamp={data ? `${data.feedsLoaded} feeds · ${data.totalItems} items` : undefined}
+      timestamp={statusText}
       noPadding
+      action={
+        <div className="flex items-center gap-1.5">
+          {isStale && (
+            <span title="Data may be stale">
+              <AlertTriangle className="size-3 text-threat-high" />
+            </span>
+          )}
+          {isValidating && !isLoading && (
+            <RefreshCw className="size-3 text-text-muted animate-spin" />
+          )}
+          <button
+            onClick={handleForceRefresh}
+            disabled={isValidating}
+            className="p-1 rounded hover:bg-surface-2 transition-colors disabled:opacity-40"
+            title="Force refresh (bypass cache)"
+          >
+            <RefreshCw className={cn("size-3 text-text-muted", isValidating && "animate-spin")} />
+          </button>
+        </div>
+      }
     >
       {isLoading ? (
         <div className="p-4">

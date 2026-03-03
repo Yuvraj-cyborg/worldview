@@ -124,9 +124,16 @@ export function clusterNews(items: NewsItem[]): ClusteredEvent[] {
     });
 
     const primary = clusterItems[0]!;
-    const allDates = clusterItems.map((i) => i.pubDate.getTime());
-    const firstSeen = new Date(Math.min(...allDates));
-    const lastUpdated = new Date(Math.max(...allDates));
+    const allDates = clusterItems.map((i) => i.pubDate.getTime()).sort((a, b) => a - b);
+    const firstSeen = new Date(allDates[0]!);
+    // Use the most recent *real* item date, not max (which could be a bad parse).
+    // Filter out dates that are within 60s of "now" since those are likely parse failures
+    // that defaulted to current time.
+    const now = Date.now();
+    const realDates = allDates.filter((t) => now - t > 60_000);
+    const lastUpdated = realDates.length > 0
+      ? new Date(realDates[realDates.length - 1]!)
+      : new Date(allDates[allDates.length - 1]!);
 
     const topSources = clusterItems.slice(0, 5).map((i) => ({
       name: i.source,
@@ -143,8 +150,11 @@ export function clusterNews(items: NewsItem[]): ClusteredEvent[] {
     }
     const topCategory = Object.entries(categoryVotes).sort((a, b) => b[1] - a[1])[0]?.[0];
 
+    // Stable cluster ID based on primary title hash
+    const titleHash = primary.title.split("").reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+
     return {
-      id: `cluster-${primary.pubDate.getTime()}-${indices[0]}`,
+      id: `cluster-${Math.abs(titleHash).toString(36)}-${primary.pubDate.getTime()}`,
       primaryTitle: primary.title,
       primarySource: primary.source,
       primaryLink: primary.link,

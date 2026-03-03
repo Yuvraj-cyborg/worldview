@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { cachedFetch } from "@/lib/cache/redis";
 import type { CryptoData } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 const CACHE_KEY = "wv:markets:crypto";
 const CACHE_TTL = 180; // 3 minutes
 
@@ -27,7 +29,7 @@ async function fetchCrypto(): Promise<{ coins: CryptoData[] }> {
         `https://api.coingecko.com/api/v3/coins/${id}?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true`,
         {
           signal: AbortSignal.timeout(5000),
-          next: { revalidate: 120 },
+          cache: "no-store",
         }
       );
 
