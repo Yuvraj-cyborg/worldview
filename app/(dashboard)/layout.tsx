@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { CountryModal } from "@/components/modals/country-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
+import { useIntelNotifications } from "@/hooks/use-intel-notifications";
 
 export default function DashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default function DashboardLayout({
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  useIntelNotifications(); // Push notify on critical AI intel events
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {

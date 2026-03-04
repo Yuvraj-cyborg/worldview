@@ -20,13 +20,13 @@ const WEBCAM_FEEDS: WebcamFeed[] = [
     // ── Iran / Middle East Hotspot ─────────────────────────────────────
     { id: "tehran", city: "Tehran", country: "Iran", region: "iran", fallbackVideoId: "-zGuR1qVKrU" },
     { id: "tel-aviv", city: "Tel Aviv", country: "Israel", region: "iran", fallbackVideoId: "gmtlJ_m2r5A" },
-    { id: "jerusalem", city: "Jerusalem", country: "Israel", region: "iran", fallbackVideoId: "JHwwZRH2wz8" },
+    { id: "jerusalem", city: "Jerusalem", country: "Israel", region: "iran", fallbackVideoId: "fIurYTprwzg" },
     { id: "iran-multicam", city: "Middle East Multi", country: "Multi", region: "iran", fallbackVideoId: "4E-iFtUM2kk" },
     // ── Middle East — Strategic ────────────────────────────────────────
     { id: "mecca", city: "Mecca", country: "Saudi Arabia", region: "middle-east", fallbackVideoId: "DEcpmPUbkDQ" },
     { id: "dubai", city: "Dubai", country: "UAE", region: "middle-east", fallbackVideoId: "QDlNYciP_uo" },
     { id: "jerusalem-wall", city: "Western Wall", country: "Israel", region: "middle-east", fallbackVideoId: "UyduhBUpO7Q" },
-    { id: "tehran-2", city: "Tehran", country: "Iran", region: "middle-east", fallbackVideoId: "-zGuR1qVKrU" },
+    { id: "tehran-2", city: "Tehran Live", country: "Iran", region: "middle-east", fallbackVideoId: "-zGuR1qVKrU" },
     // ── Europe — Conflict Zones ────────────────────────────────────────
     { id: "kyiv", city: "Kyiv", country: "Ukraine", region: "europe", fallbackVideoId: "-Q7FuPINDjA" },
     { id: "odessa", city: "Odessa", country: "Ukraine", region: "europe", fallbackVideoId: "e2gC37ILQmk" },

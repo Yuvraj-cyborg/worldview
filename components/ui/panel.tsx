@@ -6,6 +6,8 @@ interface PanelProps {
   icon?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  contentClassName?: string;
+  contentStyle?: React.CSSProperties;
   action?: React.ReactNode;
   noPadding?: boolean;
 }
@@ -16,6 +18,8 @@ export function Panel({
   icon,
   children,
   className,
+  contentClassName,
+  contentStyle,
   action,
   noPadding,
 }: PanelProps) {
@@ -42,7 +46,7 @@ export function Panel({
           )}
         </div>
       </div>
-      <div className={cn("max-h-[420px] overflow-y-auto", !noPadding && "p-4")}>{children}</div>
+      <div className={cn("max-h-[420px] overflow-y-auto", contentClassName, !noPadding && "p-4")} style={contentStyle}>{children}</div>
     </div>
   );
 }
