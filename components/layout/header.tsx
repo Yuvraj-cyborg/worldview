@@ -1,9 +1,10 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Search, Bell, Sun, Moon, Globe, Settings, Github, } from "lucide-react";
+import { Search, Sun, Moon, Globe, Settings, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { NotificationBell } from "@/components/ui/notification-bell";
 
 interface HeaderProps {
   onOpenSearch?: () => void;
@@ -45,15 +46,7 @@ export function Header({ onOpenSearch, onOpenSettings }: HeaderProps) {
         </button>
 
         <div className="flex items-center gap-1">
-          <button
-            className="relative size-8 cursor-pointer flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            aria-label="Alerts"
-          >
-            <Bell className="size-4" />
-            <span className="absolute -top-0.5 -right-0.5 size-3.5 rounded-full bg-threat-critical text-[9px] font-bold text-white flex items-center justify-center">
-              3
-            </span>
-          </button>
+          <NotificationBell />
 
           <button
             onClick={onOpenSettings}
