@@ -58,7 +58,8 @@ const DEFAULT_GRID_IDS = ["jerusalem", "tehran", "kyiv", "washington"];
 type ViewMode = "grid" | "single";
 
 function buildEmbedUrl(videoId: string): string {
-    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://worldview.vercel.app";
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0&origin=${encodeURIComponent(origin)}`;
 }
 
 export function LiveCamsPanel() {

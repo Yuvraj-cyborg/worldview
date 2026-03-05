@@ -38,7 +38,8 @@ const CHANNELS: Channel[] = [
 ];
 
 function buildEmbedUrl(videoId: string, muted: boolean): string {
-    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=1&modestbranding=1&playsinline=1&rel=0`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://worldview.vercel.app";
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=1&modestbranding=1&playsinline=1&rel=0&origin=${encodeURIComponent(origin)}`;
 }
 
 interface LiveTvPanelProps {
